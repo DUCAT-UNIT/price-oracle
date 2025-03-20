@@ -1,0 +1,15 @@
+{
+  "initial_stamp"     : 1742481677,
+  "initial_price"     : 50000,
+  "min_price"         : 25000,
+  "max_price"         : 200000,
+  "volatility"        : 0.04,
+  "time_step"         : 5,
+  "trend_strength"    : 0.001,
+  "momentum_factor"   : 0.3,
+  "shock_probability" : 0.01,
+  "shock_magnitude"   : 0.1,
+  "crash_interval"    : 200,
+  "crash_magnitude"   : 0.1,
+  "verbose"           : false
+}
