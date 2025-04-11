@@ -26,10 +26,10 @@ app.use(cors())
 app.get('/api/quote', (req, res) => {
   // Parse the current timestamp from the query parameters.
   const curr_stamp = Util.parse_uint(req.query.cs) ?? Util.now()
-  // Parse the price threshold.
-  const req_thold  = Util.parse_uint(req.query.th)
   // Parse the price timestamp.
   const req_stamp  = Util.parse_uint(req.query.ts) ?? curr_stamp
+  // Parse the price threshold.
+  const req_thold  = Util.parse_uint(req.query.th)
   // Check if the threshold is valid.
   if (req_thold === null) {
     res.status(400).send('invalid threshold: ' + req.query.th)
