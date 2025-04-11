@@ -1,6 +1,6 @@
 import { Assert, now } from './util.js'
 
-import type { PriceGenConfig, PricePoint, PriceSimulation } from '../types.js'
+import type { PriceData, PriceGenConfig, PricePoint, PriceQuery } from '../types.js'
 
 const DEFAULT_CONFIG : PriceGenConfig = {
   initial_stamp     : now() - 100_000,
@@ -57,63 +57,64 @@ export class PriceGenerator {
     this.validate_config()
 
     if (this.config.verbose) {
-      console.log(`[ pricegen ] start price: ${this.start_price}, start time: ${this.start_time}`)
+      console.log(`[ pricegen ] start price: ${this.init_price}, start time: ${this.init_time}`)
     }
   }
 
-  get start_price() : number {
+  get init_price() : number {
     return this.config.initial_price
   }
 
-  get start_time() : number {
+  get init_time() : number {
     return this.config.initial_stamp
   }
 
   // Generate price simulation up to end_time with threshold and quote timestamp
-  simulate(
-    req_stamp : number,
-    threshold : number,
-    end_time  : number = now()
-  ): PriceSimulation {
+  simulate(query : PriceQuery) : PriceData {
+    const { close_stamp = now(), start_stamp = now(), thold_price } = query
+
     // Assert that the input parameters are valid.
-    Assert.ok(end_time >= this.start_time, 'End time must be after start time')
-    Assert.ok(this.start_price > threshold, 'Initial price must be above threshold')
-    Assert.ok(req_stamp >= this.start_time && req_stamp <= end_time, 'Quote timestamp must be between start and end time')
+    Assert.ok(start_stamp >= this.init_time, 'Quote timestamp must be after initial time')
+    Assert.ok(close_stamp >= this.init_time, 'End time must be after initial time')
+    Assert.ok(start_stamp <= close_stamp,    'Quote timestamp must be before end time')
+    //Assert.ok(thold_price > this.init_price, 'Threshold must be above initial price')
+    
     // Log the simulation parameters.
     if (this.config.verbose) {
-      console.log(`[ pricegen ] simulate req_stamp: ${req_stamp}, threshold: ${threshold}, end_time: ${end_time}`)
+      console.log(`[ pgen ] simulate req_stamp: ${start_stamp}, threshold: ${thold_price}, end_time: ${close_stamp}`)
     }
     // Reset the random number generator and momentum.
     this.rng.reset()
     this.momentum = 0
     // Compute the number of steps to simulate.
-    const steps = Math.floor((end_time - this.start_time) / this.config.time_step)
+    const steps = Math.floor((close_stamp - this.init_time) / this.config.time_step)
     // Initialize the current price and stopped price.
-    let current_price : number = this.start_price
+    let current_price : number = this.init_price
+    let current_stamp : number = this.init_time
     let min_time_diff : number = Infinity
     let stopped_at    : PricePoint | null = null
     let closest_quote : PricePoint | null = null
     // Simulate the price movement.
     for (let i = 0; i <= steps; i++) {
-      // Compute the timestamp for the current step.
-      const timestamp = this.start_time + i * this.config.time_step
       // Set the verbose flag.
       const verbose = (this.config.verbose && stopped_at === null)
+      // Compute the timestamp for the current step.
+      current_stamp = this.init_time + (i * this.config.time_step)
       // Compute the next price for the current step.
-      current_price = this.next_price(current_price, i, timestamp, verbose)
+      current_price = this.next_price(current_price, i, current_stamp, verbose)
       // Compute the price point for the current step.
       const point = { 
         price     : Math.round(current_price), 
-        timestamp : timestamp 
+        timestamp : current_stamp 
       }
       // Find the closest quote timestamp.
-      const time_diff = Math.abs(timestamp - req_stamp)
+      const time_diff = Math.abs(current_stamp - start_stamp)
       if (time_diff < min_time_diff) {
         min_time_diff = time_diff
         closest_quote = point
       }
       // Check if the price has dropped below the threshold.
-      if (stopped_at === null && timestamp > req_stamp && current_price <= threshold) {
+      if (stopped_at === null && current_stamp > start_stamp && current_price <= thold_price) {
         stopped_at = point
       }
     }
@@ -121,39 +122,40 @@ export class PriceGenerator {
     Assert.exists(closest_quote, 'Failed to find a quote price point')
     // Return the simulation result.
     return {
-      curr_price    : Math.round(current_price),
-      quote_price   : closest_quote.price,
-      quote_stamp   : closest_quote.timestamp,
-      stop_price    : stopped_at?.price ?? null,
-      stop_stamp    : stopped_at?.timestamp ?? null
+      close_price : Math.round(current_price),
+      close_stamp : current_stamp,
+      start_price : closest_quote.price,
+      start_stamp : closest_quote.timestamp,
+      stop_price  : stopped_at?.price ?? null,
+      stop_stamp  : stopped_at?.timestamp ?? null
     }
   }
 
   private next_price (
-    current_price : number,
-    step          : number,
-    timestamp     : number,
-    verbose       : boolean = false
+    curr_price : number,
+    step       : number,
+    timestamp  : number,
+    verbose    : boolean = false
   ) : number {
     // Base random movement (Brownian motion-like).
-    const random_move = (this.rng.next() - 0.5) * 2 * this.config.volatility * current_price
+    const random_move = (this.rng.next() - 0.5) * 2 * this.config.volatility * curr_price
     // Trend component.
-    const trend = current_price * this.config.trend_strength
+    const trend = curr_price * this.config.trend_strength
     // Momentum component.
     const momentum_effect = this.momentum * this.config.momentum_factor
     this.momentum = random_move
     // Random shock component.
     const shock_chance = this.rng.next()
     const shock = shock_chance < this.config.shock_probability
-      ? (this.rng.next() - 0.5) * 2 * current_price * this.config.shock_magnitude
+      ? (this.rng.next() - 0.5) * 2 * curr_price * this.config.shock_magnitude
       : 0
     // Regular crash component.
     const is_crash_step = step % this.config.crash_interval === 0 && step > 0
-    const crash = is_crash_step ? -current_price * this.config.crash_magnitude : 0
+    const crash = is_crash_step ? -curr_price * this.config.crash_magnitude : 0
     // Calculate the new price and enforce boundaries.
-    const new_price = Math.max(
+    const new_price = Math.max (
       this.config.min_price,
-      Math.min(this.config.max_price, current_price + random_move + trend + momentum_effect + shock + crash)
+      Math.min(this.config.max_price, curr_price + random_move + trend + momentum_effect + shock + crash)
     )
     // Logging for first 10 steps and crash steps.
     if (verbose && (step < 10 || is_crash_step)) {

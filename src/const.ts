@@ -23,6 +23,7 @@ if (process.env['SERVER_PORT'] === undefined) {
 /* Exported Configuration */
 
 export const GEN_CONFIG  = generator_config
+export const DOMAIN      = 'exchange/quote'
 export const HMAC_SECRET = process.env['HMAC_SECRET']
 export const SIGN_SECRET = process.env['SIGN_SECRET']
 export const SERVER_PORT = parse_uint(process.env['SERVER_PORT']) ?? DEFAULT_PORT

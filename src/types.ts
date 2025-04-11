@@ -3,28 +3,31 @@ export type PriceQuote = ActiveQuote | ExpiredQuote
 export type QuotePreimage = [
   domain_label : string,
   oracle_pk    : string,
+  curr_price   : number,
   curr_stamp   : number,
   quote_price  : number,
   quote_stamp  : number,
-  is_expired   : boolean,
   stop_price   : number | null,
   stop_stamp   : number | null,
-  thold_key    : string | null,
   thold_hash   : string,
+  thold_key    : string | null,
   thold_price  : number,
 ]
 
-export interface QuoteTemplate {
+export interface QuoteData {
   curr_price  : number
   curr_stamp  : number
-  is_expired  : boolean
-  oracle_pk   : string
   quote_price : number
   quote_stamp : number
-  stop_price  : number | null,
-  stop_stamp  : number | null,
+  stop_price  : number | null
+  stop_stamp  : number | null
+}
+
+export interface QuoteTemplate extends QuoteData {
+  is_expired  : boolean
+  oracle_pk   : string
   thold_hash  : string
-  thold_key   : string | null,
+  thold_key   : string | null
   thold_price : number
 }
 
@@ -77,11 +80,18 @@ export interface PricePoint {
   timestamp : number  // Timestamp of this price
 }
 
+export interface PriceQuery {
+  close_stamp? : number
+  start_stamp  : number
+  thold_price  : number
+}
+
 // Simulation result
-export interface PriceSimulation {
-  curr_price    : number            // Current price
-  quote_price   : number            // Price at requested timestamp
-  quote_stamp   : number            // Timestamp of requested price
-  stop_price    : number | null     // Price at threshold, or null if not hit
-  stop_stamp    : number | null     // Timestamp of threshold, or null if not hit
+export interface PriceData {
+  close_price : number        // Current price
+  close_stamp : number        // Timestamp of current price
+  start_price : number        // Price at requested timestamp
+  start_stamp : number        // Timestamp of requested price
+  stop_price  : number | null // Price at threshold, or null if not hit
+  stop_stamp  : number | null // Timestamp of threshold, or null if not hit
 }
