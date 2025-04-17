@@ -40,7 +40,7 @@ app.get('/api/quote', async (req, res) => {
     const query_stamp = Math.min(req_stamp, curr_stamp)
     // Fetch the price interval data from the connector.
     const price_data  = await oracle.api.get_stop_price({
-      close_stamp : curr_stamp,
+      curr_stamp : curr_stamp,
       start_stamp : query_stamp,
       thold_price : req_thold
     })
@@ -56,7 +56,7 @@ app.get('/api/quote', async (req, res) => {
 })
 
 // Start the price oracle.
-oracle.start_polling()
+oracle.start()
 
 // Start the express server.
 app.listen(CONST.SERVER_PORT, () => {

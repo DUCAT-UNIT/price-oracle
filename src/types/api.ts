@@ -1,4 +1,4 @@
-import type { ApiResponse } from '../util/fetch.js'
+import type { ApiResponse } from '../lib/fetch.js'
 
 export interface PricePoint {
   price : number  // Current price
@@ -14,9 +14,9 @@ export interface PriceFetcherAPI {
 }
 
 export interface StopPriceQuery {
-  close_stamp? : number
-  start_stamp  : number
-  thold_price  : number
+  curr_stamp? : number
+  start_stamp : number
+  thold_price : number
 }
 
 export interface StopPriceData {

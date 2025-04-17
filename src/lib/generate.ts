@@ -77,7 +77,7 @@ export class PriceGenerator {
 
   // Generate price simulation up to end_time with threshold and quote timestamp
   simulate(query : StopPriceQuery) : StopPriceData {
-    const { close_stamp = now(), start_stamp = now(), thold_price } = query
+    const { curr_stamp: close_stamp = now(), start_stamp = now(), thold_price } = query
 
     // Assert that the input parameters are valid.
     Assert.ok(start_stamp >= this.init_time, 'Quote timestamp must be after initial time')

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import {
   normalize_obj,
   parse_error
-} from './helpers.js'
+} from '../lib/util.js'
 
 export type ApiResponse<T = any> = DataResponse<T> | ErrorResponse
 

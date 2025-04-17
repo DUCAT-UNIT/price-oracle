@@ -54,22 +54,20 @@ export class PriceOracle {
     return this._queue
   }
 
-  start_polling(): void {
-    if (this._poll_timer) {
-      console.warn('price polling already running')
-      return
-    } else {
-      // Start price polling
+  /**
+   * Start the price oracle.
+   */
+  start(): void {
+    // If the price polling is not running,
+    if (!this._poll_timer) {
+      // Start price polling.
       this.api.get_latest_price()
       this._poll_timer = setInterval(() => {
         this.api.get_latest_price()
       }, PRICE_IVAL * 1000)
     }
 
-    if (this._scanner.is_running) {
-      console.warn('price scanner already running')
-      return
-    } else {
+    if (!this._scanner.is_running) {
       // Start price scanner.
       this._scanner.start()
     }
@@ -78,8 +76,10 @@ export class PriceOracle {
     this._queue.start()
   }
 
-  // Stop polling
-  stop_polling(): void {
+  /**
+   * Stop the price oracle.
+   */
+  stop(): void {
     // Stop price polling.
     if (this._poll_timer) {
       clearInterval(this._poll_timer)

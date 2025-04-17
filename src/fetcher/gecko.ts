@@ -1,5 +1,5 @@
 import { URLSearchParams }       from 'url'
-import { Fetch, Resolve }        from '../util/fetch.js'
+import { Fetch, Resolve }        from '../lib/fetch.js'
 import { get_nearest_ival, now } from '../lib/util.js'
 
 import {
@@ -8,7 +8,7 @@ import {
 } from '../const.js'
 
 import type { PricePoint }  from '../types/index.js'
-import type { ApiResponse } from '../util/fetch.js'
+import type { ApiResponse } from '../lib/fetch.js'
 
 export interface GeckoLatestPriceResponse {
   bitcoin: {

@@ -41,6 +41,8 @@ console.log(`[ const ] price interval : ${PRICE_IVAL}`)
 export const ORACLE_TIME_WINDOW_MIN = 60 * 60 * 24 * 2
 export const ORACLE_TIME_WINDOW_MAX = PRICE_IVAL * 2
 
+export const QUEUE_INTERVAL = 500 // 500ms between requests
+
 export const HMAC_SECRET     = process.env['HMAC_SECRET']
 export const ORACLE_API_KEY  = process.env['ORACLE_API_KEY']
 export const ORACLE_API_HOST = process.env['ORACLE_API_HOST']

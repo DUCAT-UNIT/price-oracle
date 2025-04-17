@@ -1,10 +1,7 @@
 import { Database }   from 'bun:sqlite'
 import { PRICE_IVAL } from '../const.js'
 
-import {
-  now,
-  get_nearest_ival
-} from '../lib/util.js'
+import { get_nearest_ival, now } from '../lib/util.js'
 
 import type { PricePoint } from '../types/index.js'
 

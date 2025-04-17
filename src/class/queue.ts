@@ -1,29 +1,22 @@
-import type { PriceFetcherAPI } from '../types/index.js'
+import { QUEUE_INTERVAL } from '../const.js'
 
-// Define request priority levels
-export type RequestPriority = 'high' | 'low'
+type RequestPriority = 'high' | 'low'
 
-// Define the request queue item interface
-export interface QueueItem<T = any> {
-  promise: Promise<T>
-  priority: RequestPriority
-  timestamp: number
+interface QueueItem<T = any> {
+  promise   : Promise<T>
+  priority  : RequestPriority
+  timestamp : number
 }
 
-/**
- * RequestQueue class for managing and processing promises with priority and rate limiting
- */
 export class RequestQueue {
-  private readonly _queue: QueueItem[] = []
-  private readonly _req_ival: number = 1000 // 1 second between requests
+  private readonly _queue : QueueItem[] = []
+  private readonly _ival  : number      = QUEUE_INTERVAL
   
-  private _lock     : boolean = false
-  private _last_req : number = 0
+  private _lock     : boolean      = false
+  private _last_req : number       = 0
   private _timer    : Timer | null = null
 
-  constructor(req_ival: number = 1000) {
-    this._req_ival = req_ival
-  }
+  constructor() {}
 
   get is_locked(): boolean {
     return this._lock
@@ -45,7 +38,7 @@ export class RequestQueue {
   ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       // Create a wrapper promise that will be executed by the queue
-      const wrapperPromise = new Promise<T>((innerResolve, innerReject) => {
+      const wrapper = new Promise<T>((innerResolve, innerReject) => {
         // Execute the original promise
         promise
           .then(result => {
@@ -59,7 +52,7 @@ export class RequestQueue {
       })
 
       const queue_item: QueueItem<T> = {
-        promise: wrapperPromise,
+        promise: wrapper,
         priority,
         timestamp: Date.now()
       }
@@ -97,9 +90,9 @@ export class RequestQueue {
     const now = Date.now()
     const timeSinceLastRequest = now - this._last_req
     
-    if (timeSinceLastRequest < this._req_ival) {
+    if (timeSinceLastRequest < this._ival) {
       // Wait for the remaining time before processing the next request
-      const waitTime = this._req_ival - timeSinceLastRequest
+      const waitTime = this._ival - timeSinceLastRequest
       setTimeout(() => this.next(), waitTime)
       return
     }
@@ -131,31 +124,31 @@ export class RequestQueue {
    * Start the queue processor
    */
   public start(): void {
-    if (this._timer) {
-      return
-    }
-    
-    console.log('[ queue ] Starting promise queue processor')
-    
-    // Process the queue immediately
+    // If the timer is already running, return.
+    if (this._timer) return
+    // Process the queue immediately.
     this.next()
-    
-    // Set up a timer to check the queue periodically
+    // Set up a timer to check the queue periodically.
     this._timer = setInterval(() => {
       if (this._queue.length > 0 && !this._lock) {
         this.next()
       }
-    }, 1000) // Check every second
+    }, this._ival)
+    // Log the start of the queue processor.
+    console.log('[ queue ] Started promise queue processor')
   }
 
   /**
    * Stop the queue processor
    */
   public stop(): void {
-    if (this._timer) {
-      clearInterval(this._timer)
-      this._timer = null
-      console.log('[ queue ] Stopped promise queue processor')
-    }
+    // If the timer is not running, return.
+    if (!this._timer) return
+    // Clear the timer.
+    clearInterval(this._timer)
+    // Set the timer to null.
+    this._timer = null
+    // Log the stop of the queue processor.
+    console.log('[ queue ] Stopped promise queue processor')
   }
 } 
