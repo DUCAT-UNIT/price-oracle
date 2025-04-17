@@ -6,7 +6,7 @@ import type {
   QuoteData,
   QuotePreimage,
   QuoteTemplate
-} from '../types.js'
+} from '../types/index.js'
 
 import * as CONST  from '../const.js'
 import * as Crypto from './crypto.js'

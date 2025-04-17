@@ -1,6 +1,12 @@
-import { Assert, now } from './util.js'
+import { now }    from './util.js'
+import { Assert } from './validate.js'
 
-import type { PriceData, PriceGenConfig, PricePoint, PriceQuery } from '../types.js'
+import type {
+  PriceData,
+  PriceGenConfig,
+  PricePoint,
+  PriceQuery
+} from '../types/index.js'
 
 const DEFAULT_CONFIG : PriceGenConfig = {
   initial_stamp     : now() - 100_000,
@@ -104,8 +110,8 @@ export class PriceGenerator {
       current_price = this.next_price(current_price, i, current_stamp, verbose)
       // Compute the price point for the current step.
       const point = { 
-        price     : Math.round(current_price), 
-        timestamp : current_stamp 
+        price : Math.round(current_price), 
+        stamp : current_stamp 
       }
       // Find the closest quote timestamp.
       const time_diff = Math.abs(current_stamp - start_stamp)
@@ -125,9 +131,9 @@ export class PriceGenerator {
       close_price : Math.round(current_price),
       close_stamp : current_stamp,
       start_price : closest_quote.price,
-      start_stamp : closest_quote.timestamp,
+      start_stamp : closest_quote.stamp,
       stop_price  : stopped_at?.price ?? null,
-      stop_stamp  : stopped_at?.timestamp ?? null
+      stop_stamp  : stopped_at?.stamp ?? null
     }
   }
 

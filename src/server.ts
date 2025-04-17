@@ -50,7 +50,7 @@ app.get('/api/quote', (req, res) => {
   } catch (err) {
     // Log the error and return a 500 error.
     console.error(err)
-    res.status(500).send(err.message)
+    res.status(500).send(err instanceof Error ? err.message : 'Unknown error')
   }
 })
 
