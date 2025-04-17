@@ -2,10 +2,10 @@ import { now }    from './util.js'
 import { Assert } from './validate.js'
 
 import type {
-  PriceData,
   PriceGenConfig,
   PricePoint,
-  PriceQuery
+  StopPriceQuery,
+  StopPriceData
 } from '../types/index.js'
 
 const DEFAULT_CONFIG : PriceGenConfig = {
@@ -76,7 +76,7 @@ export class PriceGenerator {
   }
 
   // Generate price simulation up to end_time with threshold and quote timestamp
-  simulate(query : PriceQuery) : PriceData {
+  simulate(query : StopPriceQuery) : StopPriceData {
     const { close_stamp = now(), start_stamp = now(), thold_price } = query
 
     // Assert that the input parameters are valid.

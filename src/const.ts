@@ -33,10 +33,13 @@ if (process.env['SERVER_PORT'] === undefined) {
 export const GEN_CONFIG    = generator_config
 export const DOMAIN        = 'exchange/quote'
 export const PRICE_IVAL    = (60 * 5) // 5 minutes
-export const GENESIS_STAMP = now()
+export const GENESIS_STAMP = now() - 60 * 60 * 24 * 90 // 90 days ago
 
 console.log(`[ const ] genesis stamp  : ${GENESIS_STAMP}`)
 console.log(`[ const ] price interval : ${PRICE_IVAL}`)
+
+export const ORACLE_TIME_WINDOW_MIN = 60 * 60 * 24 * 2
+export const ORACLE_TIME_WINDOW_MAX = PRICE_IVAL * 2
 
 export const HMAC_SECRET     = process.env['HMAC_SECRET']
 export const ORACLE_API_KEY  = process.env['ORACLE_API_KEY']

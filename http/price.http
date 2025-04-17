@@ -1,4 +1,0 @@
-GET https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_last_updated_at=true
-Host: api.coingecko.com
-//x-cg-api-key: YOUR_API_KEY_HERE
-Content-Type: application/json

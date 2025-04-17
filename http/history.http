@@ -1,4 +1,0 @@
-GET https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2
-Host: api.coingecko.com
-//x-cg-api-key: YOUR_API_KEY_HERE
-Content-Type: application/json

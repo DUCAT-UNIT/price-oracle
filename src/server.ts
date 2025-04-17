@@ -1,7 +1,8 @@
 import express from 'express'
 import cors    from 'cors'
 
-import { PriceGenerator }  from './lib/generate.js'
+import { PriceOracle }     from './class/price.js'
+import { PriceFetcher }    from './fetcher/index.js'
 import { get_price_quote } from './lib/quote.js'
 
 import * as CONST  from './const.js'
@@ -12,10 +13,9 @@ import * as Util   from './lib/util.js'
 
 // Compute an ECDSA public key from the signing secret.
 const oracle_pk = Crypto.get_pubkey(CONST.SIGN_SECRET)
-// Initialize the price generator.
-const price_gen = new PriceGenerator(CONST.GEN_CONFIG)
-// Create a connector to the price generator.
-const connector = price_gen.simulate.bind(price_gen)
+const fetcher   = PriceFetcher.gecko
+const oracle    = new PriceOracle('test/db.sqlite', fetcher)
+
 // Initialize the express server.
 const app = express()
 // Configure CORS for requests.
@@ -23,7 +23,7 @@ app.use(cors())
 
 /* Server Logic */
 
-app.get('/api/quote', (req, res) => {
+app.get('/api/quote', async (req, res) => {
   // Parse the current timestamp from the query parameters.
   const curr_stamp = Util.parse_uint(req.query.cs) ?? Util.now()
   // Parse the price timestamp.
@@ -35,16 +35,17 @@ app.get('/api/quote', (req, res) => {
     res.status(400).send('invalid threshold: ' + req.query.th)
     return
   }
-
   try {
-    // Fetch a price quote from the generator.
-    const quote = get_price_quote(
-      connector,
-      oracle_pk,
-      req_thold,
-      req_stamp,
-      curr_stamp
-    )
+    // Ensure that the price timestamp is not from the future.
+    const query_stamp = Math.min(req_stamp, curr_stamp)
+    // Fetch the price interval data from the connector.
+    const price_data  = await oracle.api.get_stop_price({
+      close_stamp : curr_stamp,
+      start_stamp : query_stamp,
+      thold_price : req_thold
+    })
+    // Create a price quote from the price data.
+    const quote = await get_price_quote (oracle_pk, price_data, req_thold)
     // Return the price quote.
     res.json(quote)
   } catch (err) {
@@ -53,6 +54,9 @@ app.get('/api/quote', (req, res) => {
     res.status(500).send(err instanceof Error ? err.message : 'Unknown error')
   }
 })
+
+// Start the price oracle.
+oracle.start_polling()
 
 // Start the express server.
 app.listen(CONST.SERVER_PORT, () => {

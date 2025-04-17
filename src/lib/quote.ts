@@ -1,8 +1,7 @@
 import { Buff } from '@cmdcode/buffy'
 
 import type {
-  PriceData,
-  PriceQuery,
+  StopPriceData,
   QuoteData,
   QuotePreimage,
   QuoteTemplate
@@ -20,21 +19,14 @@ const HMAC_SECRET = CONST.HMAC_SECRET
  * 
  * @param price_gen    The price generator to use.
  * @param thold_price  The threshold price for the quote.
- * @param req_stamp    The timestamp of the request.
- * @param curr_stamp   The current timestamp.
+ * @param price_data   The price data to use.
  * @returns            Returns a price quote.
  */
-export function get_price_quote (
-  connector   : (query : PriceQuery) => PriceData,
+export async function get_price_quote (
   oracle_pk   : string,
-  thold_price : number,
-  req_stamp   : number,
-  curr_stamp  : number = Util.now()
+  price_data  : StopPriceData,
+  thold_price : number
 ) {
-  // Ensure that the price timestamp is not from the future.
-  const query_stamp  = Math.min(req_stamp, curr_stamp)
-  // Fetch the price interval data from the connector.
-  const price_data   = connector({ close_stamp : curr_stamp, start_stamp : query_stamp, thold_price })
   // Format the price interval data.
   const quote_data   = format_price_data(price_data)
   // Define the quote as expired if a stop price is returned.
@@ -55,7 +47,7 @@ export function get_price_quote (
   return { ...req_template, req_id, req_sig }
 }
 
-function format_price_data (data : PriceData) : QuoteData {
+function format_price_data (data : StopPriceData) : QuoteData {
   return {
     curr_price  : data.close_price,
     curr_stamp  : data.close_stamp,

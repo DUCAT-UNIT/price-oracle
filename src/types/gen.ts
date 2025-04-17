@@ -1,5 +1,3 @@
-
-
 // Configuration interface
 export interface PriceGenConfig {
   initial_stamp     : number  // Starting timestamp

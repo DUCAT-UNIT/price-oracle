@@ -13,14 +13,13 @@ export interface PriceFetcherAPI {
   ) => Promise<ApiResponse<PricePoint[]>>
 }
 
-export interface PriceQuery {
+export interface StopPriceQuery {
   close_stamp? : number
   start_stamp  : number
   thold_price  : number
 }
 
-// Simulation result
-export interface PriceData {
+export interface StopPriceData {
   close_price : number        // Current price
   close_stamp : number        // Timestamp of current price
   start_price : number        // Price at requested timestamp

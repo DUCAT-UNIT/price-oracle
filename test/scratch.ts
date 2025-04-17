@@ -14,4 +14,4 @@ const stamp = now() - (60 * 60 * 12)
 
 console.log('current stamp :', stamp)
 
-oracle.start_price_polling()
+oracle.start_polling()
