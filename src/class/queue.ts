@@ -32,10 +32,10 @@ export class RequestQueue {
    * @param priority - The priority of the promise
    * @returns A promise that resolves with the result of the original promise
    */
-  public enqueue<T>(
-    promise: Promise<T>,
-    priority: RequestPriority = 'low'
-  ): Promise<T> {
+  public add<T>(
+    promise  : Promise<T>,
+    priority : RequestPriority = 'low'
+  ) : Promise<T> {
     return new Promise<T>((resolve, reject) => {
       // Create a wrapper promise that will be executed by the queue
       const wrapper = new Promise<T>((innerResolve, innerReject) => {
@@ -66,7 +66,7 @@ export class RequestQueue {
         this._queue.push(queue_item)
       }
       
-      console.log(`[  queue  ] Enqueued promise with ${priority} priority. Queue size: ${this._queue.length}`)
+      console.log(`[  queue  ] Added promise with ${priority} priority. Queue size: ${this._queue.length}`)
       
       // Start processing if not already running
       if (!this._lock && !this._timer) {
@@ -78,7 +78,7 @@ export class RequestQueue {
   /**
    * Process the next item in the queue
    */
-  private async next(): Promise<void> {
+  private async _next(): Promise<void> {
     if (this._queue.length === 0) {
       this._lock = false
       return
@@ -93,7 +93,7 @@ export class RequestQueue {
     if (timeSinceLastRequest < this._ival) {
       // Wait for the remaining time before processing the next request
       const waitTime = this._ival - timeSinceLastRequest
-      setTimeout(() => this.next(), waitTime)
+      setTimeout(() => this._next(), waitTime)
       return
     }
     
@@ -117,7 +117,7 @@ export class RequestQueue {
     }
     
     // Process the next item
-    setTimeout(() => this.next(), 0)
+    setTimeout(() => this._next(), 0)
   }
 
   /**
@@ -127,11 +127,11 @@ export class RequestQueue {
     // If the timer is already running, return.
     if (this._timer) return
     // Process the queue immediately.
-    this.next()
+    this._next()
     // Set up a timer to check the queue periodically.
     this._timer = setInterval(() => {
       if (this._queue.length > 0 && !this._lock) {
-        this.next()
+        this._next()
       }
     }, this._ival)
     // Log the start of the queue processor.

@@ -22,7 +22,7 @@ export function get_price_history_api (client: PriceOracle) {
       // Create a promise for fetching the price history
       const prom = client.fetcher.history(start_ts, end_ts)
       // Enqueue the promise with high priority
-      const res = await client.queue.enqueue(prom, 'high')
+      const res = await client.queue.add(prom, 'high')
       // Check if the response is an error
       if (!res.ok) {
         console.error('Error response from API:', res.error)
@@ -60,7 +60,7 @@ export function get_latest_price_api (client: PriceOracle) {
       // Create a promise for fetching the latest price
       const prom = client.fetcher.latest()
       // Enqueue the promise with high priority
-      const res = await client.queue.enqueue(prom, 'high')
+      const res = await client.queue.add(prom, 'high')
       // Check if the response is an error
       if (!res.ok) {
         console.error('Error response from API:', res.error)
