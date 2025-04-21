@@ -30,7 +30,7 @@ export class PriceOracle {
     this._db      = new PriceDB(db_path)
     this._fetcher = fetcher
     this._queue   = new RequestQueue()
-    this._scanner = new PriceScanner(this)
+    this._scanner = new PriceScanner(this, fetcher.PRICE_IVAL, fetcher.WINDOW_SIZE)
   }
 
   get api() {
@@ -67,13 +67,11 @@ export class PriceOracle {
       }, PRICE_IVAL * 1000)
     }
 
-    if (!this._scanner.is_running) {
-      // Start price scanner.
-      this._scanner.start()
-    }
-
     // Start the queue processor.
     this._queue.start()
+
+    // Start the price scanner.
+    this._scanner.scan()
   }
 
   /**
@@ -86,11 +84,6 @@ export class PriceOracle {
       this._poll_timer = null
     }
 
-    // Stop price scanner.
-    if (this._scanner.is_running) {
-      this._scanner.stop()
-    }
-        
     // Stop the queue processor
     this._queue.stop()
   }

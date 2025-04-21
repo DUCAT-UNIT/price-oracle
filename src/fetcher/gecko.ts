@@ -28,6 +28,10 @@ const HEADERS = {
   'x-cg-pro-api-key' : ORACLE_API_KEY,
 }
 
+// Price interval and window size for the price provider.
+export const PRICE_IVAL  = 3600
+export const WINDOW_SIZE = 24 * 60 * 60
+
 /**
  * Fetch the latest price from the Gecko API.
  * @returns The latest price.

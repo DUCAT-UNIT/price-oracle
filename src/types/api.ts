@@ -6,8 +6,10 @@ export interface PricePoint {
 }
 
 export interface PriceFetcherAPI {
-  latest  : () => Promise<ApiResponse<PricePoint>>
-  history :(
+  PRICE_IVAL  : number
+  WINDOW_SIZE : number
+  latest      : () => Promise<ApiResponse<PricePoint>>
+  history     :(
     start_stamp: number,
     stop_stamp?: number
   ) => Promise<ApiResponse<PricePoint[]>>
