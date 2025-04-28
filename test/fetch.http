@@ -1,2 +1,2 @@
-GET http://localhost:8082/api/quote?th=84800
+GET http://localhost:8082/api/quote?th=84800&ts=1745802600
 Accept: application/json

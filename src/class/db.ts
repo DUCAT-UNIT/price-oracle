@@ -1,7 +1,4 @@
-import { Database }   from 'bun:sqlite'
-import { PRICE_IVAL } from '../const.js'
-
-import { get_nearest_ival, now } from '../lib/util.js'
+import { Database } from 'bun:sqlite'
 
 import type { PricePoint } from '../types/index.js'
 
@@ -12,6 +9,7 @@ export class PriceDB {
     // Create the database connection.
     this._db = new Database(db_path, { create: true })
     // Create the price history table.
+    console.log(`[ db ] creating price history table`)
     this._db.run(`
       CREATE TABLE IF NOT EXISTS price_history (
         stamp INTEGER PRIMARY KEY,
@@ -19,6 +17,7 @@ export class PriceDB {
       )
     `)
     // Create the price history index.
+    console.log(`[ db ] creating price history index`)
     this._db.run(`CREATE INDEX IF NOT EXISTS idx_price ON price_history(price)`)
   }
 
@@ -31,8 +30,8 @@ export class PriceDB {
     price: number,
     stamp: number
   ): void {
-    const ts = get_nearest_ival(stamp, PRICE_IVAL)
-    this._db.run(`INSERT OR REPLACE INTO price_history (price, stamp) VALUES (?, ?)`, [ price, ts ])
+    console.log(`[ db ] inserting price : ${price} at stamp : ${stamp}`)
+    this._db.run(`INSERT OR REPLACE INTO price_history (price, stamp) VALUES (?, ?)`, [ price, stamp ])
   }
 
   /**
@@ -40,6 +39,7 @@ export class PriceDB {
    * @returns The latest price and timestamp.
    */
   get_latest_price(): PricePoint | null {
+    console.log(`[ db ] getting latest price`)
     const row = this._db.query(`
       SELECT price, stamp 
       FROM price_history 
@@ -55,12 +55,12 @@ export class PriceDB {
    * @returns The price and timestamp at the given timestamp.
    */
   get_point_at_stamp(query_stamp: number): PricePoint | null {
-    const stamp = get_nearest_ival(query_stamp)
-    const row   = this._db.query(`
+    console.log(`[ db ] getting point at stamp : ${query_stamp}`)
+    const row = this._db.query(`
       SELECT price, stamp 
       FROM price_history 
       WHERE stamp = ?
-    `).get(stamp) as PricePoint | null
+    `).get(query_stamp) as PricePoint | null
     return row
   }
 
@@ -74,12 +74,10 @@ export class PriceDB {
   get_point_below_thold (
     price_thold : number,
     start_stamp : number,
-    end_stamp   : number = now()
+    end_stamp   : number
   ) : PricePoint | null {
-    // Get the nearest interval timestamps for the start and end timestamps.
-    const start = get_nearest_ival(start_stamp)
-    const end   = get_nearest_ival(end_stamp)
     // Get the price point at the earliest crossing.
+    console.log(`[ db ] getting point below thold : ${price_thold} between ${start_stamp} and ${end_stamp}`)
     return this._db.query(`
       SELECT price, stamp
       FROM price_history 
@@ -87,7 +85,7 @@ export class PriceDB {
       AND price < ?
       ORDER BY stamp ASC
       LIMIT 1
-    `).get(start, end, price_thold) as PricePoint | null
+    `).get(start_stamp, end_stamp, price_thold) as PricePoint | null
   }
 
   /**
@@ -100,22 +98,21 @@ export class PriceDB {
     start_stamp : number,
     end_stamp   : number
   ): PricePoint[] {
-    // Get the nearest interval timestamps for the start and end timestamps.
-    const start = get_nearest_ival(start_stamp)
-    const end   = get_nearest_ival(end_stamp)
     // Get the price history for the given time range.
+    console.log(`[ db ] getting price history between ${start_stamp} and ${end_stamp}`)
     return this._db.query(`
       SELECT price, stamp 
       FROM price_history 
       WHERE stamp BETWEEN ? AND ?
       ORDER BY stamp
-    `).all(start, end) as PricePoint[]
+    `).all(start_stamp, end_stamp) as PricePoint[]
   }
 
   /**
    * Close the database connection.
    */
   close(): void {
+    console.log(`[ db ] closing database connection`)
     this._db.close()
   }
 }

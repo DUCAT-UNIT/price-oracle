@@ -30,7 +30,7 @@ export class PriceOracle {
     this._db      = new PriceDB(db_path)
     this._fetcher = fetcher
     this._queue   = new RequestQueue()
-    this._scanner = new PriceScanner(this, fetcher.PRICE_IVAL, fetcher.WINDOW_SIZE)
+    this._scanner = new PriceScanner(this, fetcher.IVAL_SIZE, fetcher.WINDOW_SIZE)
   }
 
   get api() {

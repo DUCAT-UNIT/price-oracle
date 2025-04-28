@@ -1,8 +1,9 @@
-import { URLSearchParams }       from 'url'
-import { Fetch, Resolve }        from '../lib/fetch.js'
-import { get_nearest_ival, now } from '../lib/util.js'
+import { URLSearchParams } from 'url'
+import { Fetch, Resolve }  from '../lib/fetch.js'
+import { now }             from '../lib/util.js'
 
 import {
+  GENESIS_STAMP,
   ORACLE_API_HOST,
   ORACLE_API_KEY
 } from '../const.js'
@@ -29,8 +30,8 @@ const HEADERS = {
 }
 
 // Price interval and window size for the price provider.
-export const PRICE_IVAL  = 3600
-export const WINDOW_SIZE = 24 * 60 * 60
+export const IVAL_SIZE   = 3600          // 1 hour
+export const WINDOW_SIZE = 24 * 60 * 60  // 1 day
 
 /**
  * Fetch the latest price from the Gecko API.
@@ -56,7 +57,7 @@ export async function fetch_latest_price(): Promise<ApiResponse<PricePoint>> {
   const { data: { bitcoin: { usd, last_updated_at } } } = res
   // Convert the price point to the proper format.
   const price = usd
-  const stamp = get_nearest_ival(last_updated_at)
+  const stamp = last_updated_at
   console.log(`[ fetcher ] latest price: ${price} at ${stamp}`)
   // Return the latest price point.
   return Resolve.data<PricePoint>({ price, stamp })
@@ -70,15 +71,19 @@ export async function fetch_latest_price(): Promise<ApiResponse<PricePoint>> {
  */
 export async function fetch_price_history (
   start_stamp : number,
-  stop_stamp  : number = now()
+  stop_stamp? : number
 ): Promise<ApiResponse<PricePoint[]>> {
   // Get the host URL and create the URL search params.
+  const current  = now()
   const host_url = ORACLE_API_HOST
   const params   = new URLSearchParams()
+  // Get the nearest ival for the start and stop timestamps.
+  const start_ts = get_min_start_stamp(start_stamp)
+  const stop_ts  = get_max_stop_stamp(stop_stamp)
   // Set the parameters.
   params.set('vs_currency', 'usd')
-  params.set('from',        start_stamp.toString())
-  params.set('to',          stop_stamp.toString())
+  params.set('from', start_ts.toString())
+  params.set('to',   stop_ts.toString())
   // params.set('interval',         'daily')
   params.set('precision',   '0')
   // Create the URL and options.
@@ -98,4 +103,15 @@ export async function fetch_price_history (
   // Return the price history.
   console.log(`[ fetcher ] price history: ${points.length} points`)
   return Resolve.data<PricePoint[]>(points)
+}
+
+function get_min_start_stamp (start_stamp : number): number {
+  const start_ts = start_stamp - WINDOW_SIZE
+  return Math.max(start_ts, GENESIS_STAMP)
+}
+
+function get_max_stop_stamp (stop_stamp? : number) : number {
+  const current = now()
+  const stop_ts = (stop_stamp ?? current) + IVAL_SIZE
+  return Math.min(stop_ts, current)
 }

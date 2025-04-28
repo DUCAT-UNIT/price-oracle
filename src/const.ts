@@ -1,6 +1,25 @@
-
 import { now, parse_uint } from './lib/util.js'
-import generator_config    from '../config.json' assert { type: 'json' }
+import generator_config    from '../config.json'   assert { type: 'json' }
+
+/** Load the price override array from the json file. */
+
+export let OVERRIDES : { price: number, stamp: number }[] = []
+
+try {
+    const json = await import('../override.json', { assert: { type: 'json' } })
+    OVERRIDES  = Array.isArray(json.default) ? json.default : []
+} catch (e) {
+    // If override.json doesn't exist, use empty array
+    console.log('[ const ] No override.json found, using default empty array');
+}
+
+/* Set a genesis stamp based on the environment variable. */
+
+export let GENESIS_STAMP = now() - 60 * 60 * 24 * 90 // Default to 90 days ago.
+
+if (process.env['GENESIS_STAMP'] !== undefined) {
+  GENESIS_STAMP = parse_uint(process.env['GENESIS_STAMP']) ?? GENESIS_STAMP
+}
 
 /* Default Values */
 
@@ -30,16 +49,12 @@ if (process.env['SERVER_PORT'] === undefined) {
 
 /* Exported Configuration */
 
-export const GEN_CONFIG    = generator_config
-export const DOMAIN        = 'exchange/quote'
-export const PRICE_IVAL    = (60 * 5) // 5 minutes
-export const GENESIS_STAMP = now() - 60 * 60 * 24 * 90 // 90 days ago
+export const GEN_CONFIG = generator_config
+export const DOMAIN     = 'exchange/quote'
+export const PRICE_IVAL = (60 * 5) // 5 minutes
 
 console.log(`[ const ] genesis stamp  : ${GENESIS_STAMP}`)
 console.log(`[ const ] price interval : ${PRICE_IVAL}`)
-
-export const ORACLE_TIME_WINDOW_MIN = 60 * 60 * 24 * 2
-export const ORACLE_TIME_WINDOW_MAX = PRICE_IVAL * 2
 
 export const QUEUE_INTERVAL = 500 // 500ms between requests
 
@@ -48,4 +63,3 @@ export const ORACLE_API_KEY  = process.env['ORACLE_API_KEY']
 export const ORACLE_API_HOST = process.env['ORACLE_API_HOST']
 export const SIGN_SECRET     = process.env['SIGN_SECRET']
 export const SERVER_PORT     = parse_uint(process.env['SERVER_PORT']) ?? DEFAULT_PORT
-

@@ -6,7 +6,7 @@ export interface PricePoint {
 }
 
 export interface PriceFetcherAPI {
-  PRICE_IVAL  : number
+  IVAL_SIZE   : number
   WINDOW_SIZE : number
   latest      : () => Promise<ApiResponse<PricePoint>>
   history     :(
@@ -16,9 +16,9 @@ export interface PriceFetcherAPI {
 }
 
 export interface StopPriceQuery {
-  curr_stamp? : number
-  start_stamp : number
-  thold_price : number
+  curr_stamp?  : number
+  start_stamp? : number
+  thold_price  : number
 }
 
 export interface StopPriceData {
