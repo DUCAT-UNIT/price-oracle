@@ -1,6 +1,6 @@
 {
   "name": "price-oracle",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "src/server.ts",
   "scripts": {
     "start": "bun run src/server.ts",
