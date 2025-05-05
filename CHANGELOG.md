@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Fixed a bug in the signature method that was creating invalid signatures. 
+- Fixed a bug in the signature method that was creating invalid signatures.
 
 ## [0.0.1]
 
