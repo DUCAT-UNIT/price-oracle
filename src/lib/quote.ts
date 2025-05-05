@@ -42,7 +42,7 @@ export async function get_price_quote (
   // Compute the hash id for the request.
   const req_id       = get_request_id(DOMAIN, req_template)
   // Create a signature for the request id.
-  const req_sig      = Crypto.sign_ecdsa(req_id, CONST.SIGN_SECRET)
+  const req_sig      = Crypto.sign_ecdsa(CONST.SIGN_SECRET, req_id)
   // Return the price quote with a request id and signature.
   return { ...req_template, req_id, req_sig }
 }
