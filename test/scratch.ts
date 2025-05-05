@@ -1,17 +1,18 @@
-import { PriceOracle }  from '../src/index.js'
+import { PriceOracle, PriceQuote }  from '../src/index.js'
 import { PriceFetcher } from '../src/fetcher/index.js'
 import { now }          from '../src/lib/util.js'
+import { secp256k1 } from '@noble/curves/secp256k1'
 
 /* ======== [ Initial Setup ] ======== */
 
-const fetcher = PriceFetcher.gecko
-const oracle  = new PriceOracle('test/db.sqlite', fetcher)
+const res   = await fetch('http://localhost:8082/api/quote?th=84800&ts=1745802600')
+const quote = await res.json() as PriceQuote
 
-/* ======== [ Fetch Price History ] ======== */
+console.log('price quote :', quote)
 
-// Get the current timestamp, minus 12 hours.
-const stamp = now() - (60 * 60 * 12)
+const { oracle_pk, req_id, req_sig } = quote
 
-console.log('current stamp :', stamp)
+const verify_sig = secp256k1.verify(req_sig, req_id, oracle_pk)
 
-oracle.start()
+console.log('verify sig :', verify_sig)
+
