@@ -1,7 +1,5 @@
-import { PriceOracle, PriceQuote }  from '../src/index.js'
-import { PriceFetcher } from '../src/fetcher/index.js'
-import { now }          from '../src/lib/util.js'
-import { secp256k1 } from '@noble/curves/secp256k1'
+import { PriceQuote } from '../src/index.js'
+import { secp256k1 }  from '@noble/curves/secp256k1'
 
 /* ======== [ Initial Setup ] ======== */
 
