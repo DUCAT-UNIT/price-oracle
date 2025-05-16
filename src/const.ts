@@ -51,7 +51,7 @@ if (process.env['SERVER_PORT'] === undefined) {
 
 export const GEN_CONFIG = generator_config
 export const DOMAIN     = 'exchange/quote'
-export const PRICE_IVAL = 30
+export const PRICE_IVAL = 5
 
 console.log(`[ const ] genesis stamp  : ${GENESIS_STAMP}`)
 console.log(`[ const ] price interval : ${PRICE_IVAL}`)
