@@ -1,29 +1,8 @@
 import { now, parse_uint } from './lib/util.js'
-import generator_config    from '../config.json'   assert { type: 'json' }
 
-/** Load the price override array from the json file. */
-
-export let OVERRIDES : { price: number, stamp: number }[] = []
-
-try {
-    const json = await import('../override.json', { assert: { type: 'json' } })
-    OVERRIDES  = Array.isArray(json.default) ? json.default : []
-} catch (e) {
-    // If override.json doesn't exist, use empty array
-    console.log('[ const ] No override.json found, using default empty array');
-}
-
-/* Set a genesis stamp based on the environment variable. */
-
-export let GENESIS_STAMP = now() - 60 * 60 * 24 * 90 // Default to 90 days ago.
-
-if (process.env['GENESIS_STAMP'] !== undefined) {
-  GENESIS_STAMP = parse_uint(process.env['GENESIS_STAMP']) ?? GENESIS_STAMP
-}
-
-/* Default Values */
-
-const DEFAULT_PORT = 8082
+import load_config from './config.js'
+import OVERRIDES   from './config/override.json'  assert { type: 'json' }
+import GENERATOR   from './config/generator.json' assert { type: 'json' }
 
 /* Environment Variables */
 
@@ -47,11 +26,19 @@ if (process.env['SERVER_PORT'] === undefined) {
   throw new Error('SERVER_PORT variable is undefined.')
 }
 
+/* Set a genesis stamp based on the environment variable. */
+
+export let GENESIS_STAMP = now() - 60 * 60 * 24 * 90 // Default to 90 days ago.
+
+if (process.env['GENESIS_STAMP'] !== undefined) {
+  GENESIS_STAMP = parse_uint(process.env['GENESIS_STAMP']) ?? GENESIS_STAMP
+}
+
 /* Exported Configuration */
 
-export const GEN_CONFIG = generator_config
 export const DOMAIN     = 'exchange/quote'
 export const PRICE_IVAL = 5
+export const CONFIG     = await load_config()
 
 console.log(`[ const ] genesis stamp  : ${GENESIS_STAMP}`)
 console.log(`[ const ] price interval : ${PRICE_IVAL}`)
@@ -62,4 +49,6 @@ export const HMAC_SECRET     = process.env['HMAC_SECRET']
 export const ORACLE_API_KEY  = process.env['ORACLE_API_KEY']
 export const ORACLE_API_HOST = process.env['ORACLE_API_HOST']
 export const SIGN_SECRET     = process.env['SIGN_SECRET']
-export const SERVER_PORT     = parse_uint(process.env['SERVER_PORT']) ?? DEFAULT_PORT
+export const SERVER_PORT     = parse_uint(process.env['SERVER_PORT'] ?? 8082)
+
+export { OVERRIDES, GENERATOR }

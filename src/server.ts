@@ -9,12 +9,10 @@ import * as CONST  from './const.js'
 import * as Crypto from './lib/crypto.js'
 import * as Util   from './lib/util.js'
 
-/* Server Init */
-
 // Compute an ECDSA public key from the signing secret.
 const oracle_pk = Crypto.get_pubkey(CONST.SIGN_SECRET)
 const fetcher   = PriceFetcher.gecko
-const oracle    = new PriceOracle('test/db.sqlite', fetcher)
+const oracle    = new PriceOracle(CONST.CONFIG.db_path, fetcher)
 
 // Initialize the express server.
 const app = express()
