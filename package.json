@@ -3,7 +3,8 @@
   "version": "0.0.2",
   "main": "src/server.ts",
   "scripts": {
-    "start": "bun run src/server.ts",
+    "start": "NODE_ENV=production bun run src/server.ts",
+    "dev": "NODE_ENV=development bun run src/server.ts",
     "scratch": "bun run test/scratch.ts"
   },
   "devDependencies": {

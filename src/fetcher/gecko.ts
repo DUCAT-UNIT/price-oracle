@@ -37,7 +37,7 @@ export const WINDOW_SIZE = 24 * 60 * 60  // 1 day
  * Fetch the latest price from the Gecko API.
  * @returns The latest price.
  */
-export async function fetch_latest_price(): Promise<ApiResponse<PricePoint>> {
+export async function fetch_latest_price () : Promise<ApiResponse<PricePoint>> {
   // Get the host URL and create the endpoint.
   const host_url = ORACLE_API_HOST
   const params   = new URLSearchParams()

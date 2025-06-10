@@ -1,4 +1,4 @@
 {
-  "db_path"     : "test/db.sqlite",
+  "db_path"     : "test/data",
   "server_port" : 8082
 }

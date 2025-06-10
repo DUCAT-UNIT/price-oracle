@@ -51,7 +51,13 @@ curl -X GET "http://localhost:8082/api/quote?th=10000&ts=1716278400"
 curl -X GET "http://localhost:8082/api/quote?th=10000&ts=1716278400&cs=1716278400"
 ```
 
+## Price Fetching
+
+When run in production mode (`bun start`), the price server is configured to fetch and store prices from an external price oracle service.
+
 ## Price Generator
+
+When run in development mode, the price server is configured to generate prices deterministically, using a price feed generator.
 
 The price generator will deterministically generate prices based on the `initial_stamp` value in the `config.json` file.
 

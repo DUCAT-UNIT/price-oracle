@@ -9,13 +9,22 @@ import * as CONST  from './const.js'
 import * as Crypto from './lib/crypto.js'
 import * as Util   from './lib/util.js'
 
+const RUN_MODE = (process.env.NODE_ENV === 'production') ? 'prod' : 'dev'
+
+console.log(`[ server ] running in ${RUN_MODE} mode`)
+
+const fetcher = RUN_MODE === 'prod'
+  ? PriceFetcher.gecko
+  : PriceFetcher.pgen
+
 // Compute an ECDSA public key from the signing secret.
+const db_path   = `${CONST.CONFIG.db_path}/${RUN_MODE}.db`
 const oracle_pk = Crypto.get_pubkey(CONST.SIGN_SECRET)
-const fetcher   = PriceFetcher.gecko
-const oracle    = new PriceOracle(CONST.CONFIG.db_path, fetcher)
+const oracle    = new PriceOracle(db_path, fetcher)
 
 // Initialize the express server.
 const app = express()
+
 // Configure CORS for requests.
 app.use(cors())
 
@@ -38,7 +47,7 @@ app.get('/api/quote', async (req, res) => {
     const query_stamp = Math.min(req_stamp, curr_stamp)
     // Fetch the price interval data from the connector.
     const price_data  = await oracle.api.get_stop_price({
-      curr_stamp : curr_stamp,
+      curr_stamp  : curr_stamp,
       start_stamp : query_stamp,
       thold_price : req_thold
     })
